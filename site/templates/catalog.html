@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="section">
+  <header class="section-header">
+    <h2>Каталог</h2>
+    <p>Исследуйте весь ассортимент DevasCarabin — элегантный утончённый стиль для ценителей.</p>
+
+    <form method="get" class="search-form">
+      <input
+        class="search-input"
+        type="search"
+        name="q"
+        placeholder="Поиск по товарам..."
+        value="{{ query }}"
+        aria-label="Поиск по товарам"
+      />
+      <button class="button button-small" type="submit">Поиск</button>
+    </form>
+  </header>
+
+  <div class="grid">
+    {% for p in products %}
+      <div class="card">
+        <a class="product-link" href="{% url 'product_detail' p.id %}">
+          <div class="card-media">
+            <img src="{% if p.image %}{{ p.image.url }}{% else %}https://images.unsplash.com/photo-1520975824679-4d7a2f1a957c?auto=format&fit=crop&w=1200&q=80{% endif %}"
+                 class="product-img" alt="{{ p.name }}">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">{{ p.name }}</h3>
+            <p class="card-meta">{{ p.price }} ₽</p>
+            <p class="card-copy">{{ p.description|truncatechars:120 }}</p>
+          </div>
+        </a>
+        <div class="card-footer">
+          <a class="button button-small" href="{% url 'add_to_cart' p.id %}?next={% url 'cart' %}">В корзину</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

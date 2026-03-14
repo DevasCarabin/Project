@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevasCarabin</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}?v=3">
+</head>
+
+<body>
+<header class="header">
+  <div class="header-inner">
+    <button class="nav-toggle" id="nav-toggle" aria-label="Открыть меню" aria-expanded="false">
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+    </button>
+
+    <nav class="nav" id="nav-menu">
+      <a href="{% url 'catalog' %}">Коллекция</a>
+      <a href="{% url 'catalog' %}">Новинки</a>
+      <a href="#" class="nav-disabled">О бренде</a>
+
+      <div class="nav-auth">
+        {% if user.is_authenticated %}
+          {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}">Админ</a>
+          {% endif %}
+          <a href="{% url 'account' %}">Кабинет</a>
+          <a href="{% url 'logout' %}">Выход</a>
+        {% else %}
+          <a href="{% url 'login' %}">Вход</a>
+          <a href="{% url 'register' %}">Регистрация</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <div class="logo">
+      <a href="{% url 'home' %}">DEVASCARABIN</a>
+    </div>
+
+    <!-- Scroll Logo (appears when scrolling down) -->
+    <div class="logo-scroll" id="logoScroll">
+      <a href="{% url 'home' %}">DEVASCARABIN</a>
+    </div>
+
+    <div class="header-actions">
+      {% if user.is_authenticated %}
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown">
+          <button class="profile-avatar-btn" id="profileBtn" aria-label="Меню профиля">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="profile-avatar">
+            {% else %}
+              <div class="profile-avatar-placeholder">{{ user.username|first|upper }}</div>
+            {% endif %}
+          </button>
+          
+          <div class="dropdown-menu" id="dropdownMenu">
+            <div class="dropdown-header">
+              <div class="dropdown-avatar">
+                {% if user.profile.avatar %}
+                  <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+                {% else %}
+                  <div class="dropdown-avatar-placeholder">{{ user.username|first|upper }}</div>
+                {% endif %}
+              </div>
+              <div class="dropdown-info">
+                <div class="dropdown-username">{{ user.get_full_name|default:user.username }}</div>
+                <div class="dropdown-email">{{ user.email }}</div>
+              </div>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <a href="{% url 'account' %}" class="dropdown-item">
+              <span class="dropdown-icon">👤</span>
+              <span>Мой профиль</span>
+            </a>
+            <a href="{% url 'cart' %}" class="dropdown-item">
+              <span class="dropdown-icon">🛒</span>
+              <span>Корзина</span>
+            </a>
+            {% if user.is_staff %}
+              <a href="{% url 'admin:index' %}" class="dropdown-item">
+                <span class="dropdown-icon">⚙️</span>
+                <span>Админ панель</span>
+              </a>
+            {% endif %}
+            
+            <div class="dropdown-divider"></div>
+            
+            <a href="{% url 'logout' %}" class="dropdown-item dropdown-logout">
+              <span class="dropdown-icon">🚪</span>
+              <span>Выход</span>
+            </a>
+          </div>
+        </div>
+      {% else %}
+        <a href="{% url 'login' %}" class="button-auth">Вход</a>
+        <a href="{% url 'register' %}" class="button-auth-primary">Регистрация</a>
+      {% endif %}
+
+      <a href="{% url 'cart' %}" class="cart-link" aria-label="Открыть корзину">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-badge">{% if cart_count %}{{ cart_count }}{% else %}0{% endif %}</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<footer class="footer">
+  <p>&copy; {% now "Y" %} DevasCarabin — <a class="link" href="https://t.me/devascarabin" target="_blank">Telegram</a></p>
+</footer>
+
+<script>
+  // Mobile navigation toggle
+  const navToggle = document.getElementById('nav-toggle');
+  const navMenu = document.getElementById('nav-menu');
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+      const isOpen = navMenu.classList.toggle('nav-open');
+      navToggle.classList.toggle('nav-open');
+      navToggle.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close menu when clicking outside (small screen)
+    document.addEventListener('click', (event) => {
+      if (!navMenu.contains(event.target) && !navToggle.contains(event.target)) {
+        navMenu.classList.remove('nav-open');
+        navToggle.classList.remove('nav-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Profile dropdown menu
+  const profileBtn = document.getElementById('profileBtn');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+
+  if (profileBtn && dropdownMenu) {
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+      if (!profileBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+        dropdownMenu.classList.remove('show');
+      }
+    });
+
+    // Close dropdown when clicking on a link
+    const dropdownItems = dropdownMenu.querySelectorAll('a');
+    dropdownItems.forEach(item => {
+      item.addEventListener('click', () => {
+        dropdownMenu.classList.remove('show');
+      });
+    });
+  }
+
+  // Scroll animations with Intersection Observer
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Optional: unobserve after animation
+        // observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Observe scroll animation elements
+  document.querySelectorAll('.scroll-fade-in, .scroll-slide-up').forEach(element => {
+    observer.observe(element);
+  });
+
+  // Logo intro animation control
+  const logoIntro = document.getElementById('logoIntro');
+  if (logoIntro) {
+    // Remove logo intro from DOM after animation completes
+    logoIntro.addEventListener('animationend', (e) => {
+      if (e.animationName === 'introFadeOut') {
+        logoIntro.remove();
+      }
+    }, { once: true });
+  }
+
+  // Header scroll logo animation
+  const logoScroll = document.getElementById('logoScroll');
+  const heroTitle = document.querySelector('.hero-title');
+  const logo = document.querySelector('.logo');
+
+  if (logoScroll && heroTitle && logo) {
+    const titleObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Hero title is visible, hide scroll logo and show original logo
+          logoScroll.classList.remove('visible');
+          logo.classList.remove('hidden');
+        } else {
+          // Hero title is not visible, show scroll logo and hide original logo
+          logoScroll.classList.add('visible');
+          logo.classList.add('hidden');
+        }
+      });
+    }, {
+      threshold: 0,
+      rootMargin: '0px 0px 0px 0px'
+    });
+
+    titleObserver.observe(heroTitle);
+  }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Logo Intro Overlay -->
+<div class="logo-intro" id="logoIntro">
+  <h1 class="logo-intro-text">DevasCarabin</h1>
+</div>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title animate-hero-title">DevasCarabin</h1>
+    <p class="hero-subtitle animate-hero-subtitle">Здесь не наблюдают - здесь участвуют</p>
+    <div class="hero-actions animate-hero-actions">
+      <a class="button button-ghost" href="{% url 'catalog' %}">Коллекция</a>
+      <a class="button" href="{% url 'catalog' %}">Магазин</a>
+    </div>
+  </div>
+</section>
+
+<section class="section scroll-fade-in">
+  <header class="section-header scroll-fade-in-content">
+    <h2>Избранное</h2>
+    <p>Отобранные силуэты сезона для вашего гардероба.</p>
+  </header>
+
+  <div class="grid">
+    {% for p in products %}
+      <div class="card scroll-slide-up">
+        <a class="product-link" href="{% url 'product_detail' p.id %}">
+          <div class="card-media">
+            <img src="{% if p.image %}{{ p.image.url }}{% else %}https://images.unsplash.com/photo-1520975824679-4d7a2f1a957c?auto=format&fit=crop&w=1200&q=80{% endif %}"
+                 class="product-img" alt="{{ p.name }}">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">{{ p.name }}</h3>
+            <p class="card-meta">{{ p.price }} ₽</p>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

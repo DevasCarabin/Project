@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="section">
+  <header class="section-header">
+    <h2>Корзина</h2>
+    <p>Проверьте ваш выбор перед оформлением заказа.</p>
+  </header>
+
+  {% if cart_items %}
+    <div class="cart-grid">
+      <div class="cart-items">
+        {% for item in cart_items %}
+          <div class="cart-item">
+            <img src="{% if item.product.image %}{{ item.product.image.url }}{% else %}https://images.unsplash.com/photo-1520975824679-4d7a2f1a957c?auto=format&fit=crop&w=1200&q=80{% endif %}"
+                 alt="{{ item.product.name }}" class="cart-item-img">
+            <div class="cart-item-body">
+              <h3>{{ item.product.name }}</h3>
+              <p class="cart-item-meta">Кол-во: {{ item.quantity }}</p>
+              <p class="cart-item-meta">Цена: {{ item.product.price }} ₽</p>
+              <p class="cart-item-total">Итого: {{ item.line_total }} ₽</p>
+              <a class="button button-small button-ghost" href="{% url 'remove_from_cart' item.product.id %}">Удалить</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <aside class="cart-summary">
+        <div class="summary-card">
+          <h3>Итого</h3>
+          <div class="summary-row">
+            <span>Товаров</span>
+            <span>{{ cart_count }}</span>
+          </div>
+          <div class="summary-row summary-total">
+            <span>Сумма</span>
+            <span>{{ cart_total }} ₽</span>
+          </div>
+          <div class="summary-actions">
+            <a class="button button-ghost" href="{% url 'catalog' %}">Продолжить покупки</a>
+            <a class="button" href="{% url 'checkout' %}">Оформить заказ</a>
+          </div>
+          <a class="link" href="{% url 'clear_cart' %}">Очистить корзину</a>
+        </div>
+      </aside>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>Корзина пуста</h3>
+      <p>Найдите свой следующий образ в коллекции.</p>
+      <a class="button" href="{% url 'catalog' %}">Перейти в каталог</a>
+    </div>
+  {% endif %}
+</section>
+
+{% endblock %}

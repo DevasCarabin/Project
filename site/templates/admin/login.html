@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Вход в админку{% endblock %}
+
+{% block content %}
+<section class="section auth" style="min-height:60vh;">
+  <div class="auth-card login-form">
+    <h2>Админ‑панель</h2>
+    <p>Введите учётные данные администратора.</p>
+
+    <form method="post" action="{% url 'admin:login' %}" class="auth-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="button">Войти</button>
+    </form>
+
+    <p class="auth-note"><a href="{% url 'admin:password_reset' %}">Забыли пароль?</a></p>
+  </div>
+</section>
+{% endblock %}

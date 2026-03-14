@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="section account">
+  <div class="account-grid">
+    <div class="account-card">
+      <!-- Modern Avatar Editor Section -->
+      <div class="avatar-editor-section">
+        <div class="avatar-display">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="Аватар {{ user.username }}" class="avatar-img" id="currentAvatar">
+          {% else %}
+            <div class="avatar-placeholder">{{ user.username|first|upper }}</div>
+          {% endif %}
+        </div>
+
+        <div class="avatar-controls">
+          <label for="avatarInput" class="button button-primary avatar-upload-btn">
+            <span class="icon">📷</span>
+            Загрузить фото
+          </label>
+          <input 
+            type="file" 
+            id="avatarInput" 
+            accept="image/*" 
+            style="display: none;" 
+            class="avatar-input"
+          >
+
+          {% if profile.avatar %}
+            <form method="post" action="{% url 'remove_avatar' %}" style="display: inline;">
+              {% csrf_token %}
+              <button class="button button-ghost avatar-remove-btn" type="submit">Удалить</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <h2>Привет, {{ user.first_name|default:user.username }}</h2>
+      <p class="account-note">Управляй профилем, заказами и избранным.</p>
+
+      <div class="account-links">
+        <a class="link" href="{% url 'cart' %}">Корзина</a>
+        <a class="link" href="{% url 'checkout' %}">Оформить заказ</a>
+        {% if user.is_staff %}
+          <a class="link" href="{% url 'admin:index' %}">Админ панель</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="account-summary">
+      <div class="summary-card">
+        <h3>Быстрый доступ</h3>
+        <div class="summary-row">
+          <span>Товаров в корзине</span>
+          <span>{{ cart_count }}</span>
+        </div>
+        <div class="summary-actions">
+          <a class="button button-ghost" href="{% url 'catalog' %}">Вернуться в каталог</a>
+          <a class="button" href="{% url 'cart' %}">Перейти в корзину</a>
+        </div>
+        <p class="account-social">Подписывайтесь на нас в Telegram: <a class="link" href="https://t.me/devascarabin" target="_blank">@devascarabin</a></p>
+      </div>
+
+      {% if orders %}
+      <div class="summary-card" style="margin-top:2rem;">
+        <h3>Мои заказы</h3>
+        <ul class="order-list">
+          {% for order in orders %}
+            <li>#{{ order.pk }} — {{ order.total }} ₽ — {{ order.get_status_display }} ({{ order.created_at|date:"d.m.Y H:i" }})</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Avatar Cropper Modal -->
+  <div id="cropperModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Редактировать аватар</h3>
+        <button class="modal-close" id="closeModal" aria-label="Закрыть">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="cropper-container">
+          <img id="cropperImage" src="" alt="Изображение для обрезки" style="max-width: 100%;">
+        </div>
+
+        <div class="crop-controls">
+          <button id="rotateCcw" class="button button-small" title="Повернуть влево">
+            <span>⟲</span> Влево
+          </button>
+          <button id="rotateCw" class="button button-small" title="Повернуть вправо">
+            Вправо <span>⟳</span>
+          </button>
+          <button id="resetCrop" class="button button-small" title="Сбросить">↻ Сброс</button>
+          <button id="flipH" class="button button-small" title="Отразить по горизонтали">⬌ Отразить</button>
+        </div>
+
+        <div class="crop-preview">
+          <div class="preview-label">Превью:</div>
+          <canvas id="previewCanvas" width="150" height="150"></canvas>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelCrop" class="button button-ghost">Отмена</button>
+        <button id="saveCrop" class="button button-success">Сохранить аватар</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+    <div class="spinner"></div>
+    <p>Загрузка...</p>
+  </div>
+</section>
+
+<!-- Include Cropper.js library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let cropper = null;
+  const modal = document.getElementById('cropperModal');
+  const cropperImage = document.getElementById('cropperImage');
+  const avatarInput = document.getElementById('avatarInput');
+  const previewCanvas = document.getElementById('previewCanvas');
+  const loadingIndicator = document.getElementById('loadingIndicator');
+  
+  // Open modal on file select
+  avatarInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        cropperImage.src = event.target.result;
+        modal.style.display = 'flex';
+        
+        // Destroy previous cropper if exists
+        if (cropper) {
+          cropper.destroy();
+        }
+        
+        // Initialize new cropper
+        setTimeout(() => {
+          cropper = new Cropper(cropperImage, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 0.8,
+            responsive: true,
+            restore: true,
+            guides: true,
+            center: true,
+            highlight: true,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: true,
+            canvas: {
+              maxWidth: 4096,
+              maxHeight: 4096,
+              fillColor: '#fff',
+              zIndex: 4,
+            },
+            crop: updatePreview,
+          });
+          updatePreview();
+        }, 100);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Update preview canvas
+  function updatePreview() {
+    if (cropper) {
+      const canvas = cropper.getCroppedCanvas({
+        maxWidth: 150,
+        maxHeight: 150,
+        fillColor: '#fff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+      const ctx = previewCanvas.getContext('2d');
+      ctx.clearRect(0, 0, 150, 150);
+      ctx.drawImage(canvas, 0, 0);
+    }
+  }
+  
+  // Rotate controls
+  document.getElementById('rotateCcw').addEventListener('click', () => {
+    if (cropper) {
+      cropper.rotate(-45);
+      updatePreview();
+    }
+  });
+  
+  document.getElementById('rotateCw').addEventListener('click', () => {
+    if (cropper) {
+      cropper.rotate(45);
+      updatePreview();
+    }
+  });
+  
+  document.getElementById('resetCrop').addEventListener('click', () => {
+    if (cropper) {
+      cropper.reset();
+      updatePreview();
+    }
+  });
+  
+  document.getElementById('flipH').addEventListener('click', () => {
+    if (cropper) {
+      cropper.scaleX(-cropper.getData().scaleX || -1);
+      updatePreview();
+    }
+  });
+  
+  // Close modal
+  function closeModal() {
+    modal.style.display = 'none';
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    avatarInput.value = '';
+  }
+  
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+  document.getElementById('cancelCrop').addEventListener('click', closeModal);
+  
+  // Save cropped avatar
+  document.getElementById('saveCrop').addEventListener('click', async () => {
+    if (cropper) {
+      loadingIndicator.style.display = 'flex';
+      try {
+        const canvas = cropper.getCroppedCanvas({
+          maxWidth: 500,
+          maxHeight: 500,
+          fillColor: '#fff',
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+        });
+        
+        const avatarData = canvas.toDataURL('image/jpeg', 0.9);
+        
+        const response = await fetch('{% url "save_cropped_avatar" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                          document.querySelector('input[name="csrfmiddlewaretoken"]')?.value ||
+                          getCookie('csrftoken'),
+          },
+          body: new URLSearchParams({
+            'avatar_data': avatarData
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Reload page to show new avatar
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        } else {
+          alert('Ошибка: ' + (data.error || 'Не удалось сохранить аватар'));
+          loadingIndicator.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка при сохранении аватара');
+        loadingIndicator.style.display = 'none';
+      }
+    }
+  });
+  
+  // CSRF token helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+});
+</script>
+
+{% endblock %}

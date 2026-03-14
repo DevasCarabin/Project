@@ -1,0 +1,81 @@
+/* Custom admin theme for DevasCarabin */
+body {
+  background: linear-gradient(160deg, #050505 0%, #131314 55%, #0b0b0b 100%) !important;
+  color: #f3f2ee !important;
+}
+
+#header, #footer {
+  background: rgba(0, 0, 0, 0.7) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#header h1 a, #header .module caption, #user-tools a {
+  color: #f6e5b8 !important;
+}
+
+#branding {
+  background: transparent !important;
+}
+
+#content, .module, .app-module, .dashboard {
+  background: rgba(12, 12, 12, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px;
+}
+
+a, .model-link, .breadcrumb, .breadcrumbs a {
+  color: rgba(246, 229, 184, 0.92) !important;
+}
+
+a:hover, .module a:hover {
+  color: #ffffff !important;
+}
+
+fieldset.module {
+  padding: 1.5rem !important;
+  box-shadow: 0 14px 35px rgba(0,0,0,0.55);
+}
+
+#changelist .results th, #changelist .results td {
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+input, select, textarea {
+  background: rgba(0,0,0,0.5) !important;
+  color: #f3f2ee !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(201, 169, 110, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.25) !important;
+}
+
+/* buttons */
+input[type=submit], .default, .button {
+  background: rgba(18, 18, 18, 0.85) !important;
+  color: #f6e5b8 !important;
+  border: 1px solid rgba(201, 169, 110, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
+}
+input[type=submit]:hover, .default:hover, .button:hover {
+  background: rgba(201, 169, 110, 0.2) !important;
+  color: #fff !important;
+}
+
+/* admin login */
+.login-form {
+  background: rgba(12, 12, 12, 0.9) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 20px !important;
+  padding: 2rem !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.7) !important;
+}
+
+#user-tools a, #nav-sidebar a {
+  transition: color 150ms ease;
+}
+
+#nav-sidebar a:hover {
+  color: #f6e5b8 !important;
+}

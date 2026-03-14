@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="section">
+  <div class="checkout-complete">
+    <h2>Спасибо за заказ!</h2>
+    <p>Ваш заказ №{{ order.id }} успешно оформлен.</p>
+    <p>Сумма заказа: <strong>{{ order.total }} ₽</strong></p>
+    <p>Статус заказа: <strong>{{ order.get_status_display }}</strong></p>
+    <p>Мы отправим вам уведомление на электронную почту, когда заказ будет готов.</p>
+
+    <a class="button" href="{% url 'catalog' %}">Продолжить покупки</a>
+    <a class="button button-ghost" href="{% url 'account' %}">Перейти в личный кабинет</a>
+  </div>
+</section>
+
+{% endblock %}

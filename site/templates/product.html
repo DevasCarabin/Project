@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="section product-detail">
+  <div class="product-grid">
+    <div class="product-media">
+      <img src="{% if product.image %}{{ product.image.url }}{% else %}https://images.unsplash.com/photo-1520975824679-4d7a2f1a957c?auto=format&fit=crop&w=1200&q=80{% endif %}"
+           alt="{{ product.name }}" class="product-detail-img">
+    </div>
+
+    <div class="product-info">
+      <h1 class="product-title">{{ product.name }}</h1>
+      <p class="product-price">{{ product.price }} ₽</p>
+      <p class="product-description">{{ product.description }}</p>
+
+      <form action="{% url 'add_to_cart' product.id %}" method="get" class="product-actions">
+        <label class="product-qty">
+          <span>Количество</span>
+          <input type="number" name="qty" value="1" min="1" class="input-qty">
+        </label>
+        <button type="submit" class="button">В корзину</button>
+      </form>
+
+      <a class="button button-ghost" href="{% url 'catalog' %}">Назад в каталог</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

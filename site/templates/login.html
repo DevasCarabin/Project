@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="section auth">
+  <div class="auth-card">
+    <h2>С возвращением</h2>
+    <p>Войдите, чтобы получить доступ к своему аккаунту DevasCarabin.</p>
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="button">Войти</button>
+    </form>
+
+    <p class="auth-note">Нет аккаунта? Зарегистрируйтесь.</p>
+  </div>
+</section>
+
+{% endblock %}

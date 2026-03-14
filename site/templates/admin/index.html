@@ -1,0 +1,19 @@
+{% extends "admin/index.html" %}
+{% load admin_stats %}
+
+{% block content %}
+  <div class="app-dashboard">
+    <div class="module">
+      <h2>Статистика</h2>
+      {% order_stats as stats %}
+      <ul>
+        <li>Всего заказов: <strong>{{ stats.orders }}</strong></li>
+        <li>Общая выручка: <strong>{{ stats.revenue }} ₽</strong></li>
+        <li>Товаров в каталоге: <strong>{{ stats.products }}</strong></li>
+        <li>Зарегистрировано пользователей: <strong>{{ stats.users }}</strong></li>
+      </ul>
+      <p><a href="{% url 'admin:products_order_changelist' %}">Перейти к заказам</a></p>
+    </div>
+  </div>
+  {{ block.super }}
+{% endblock %}
